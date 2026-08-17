@@ -5,9 +5,11 @@ import { Moon, Shield, Sun } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 const nav = [
   { href: "/catalogue" as const, label: "Catalogue" },
+  { href: "/cart" as const, label: "Cart" },
   { href: "/security" as const, label: "Security" },
   { href: "/creator" as const, label: "Creator Studio" },
   { href: "/buyer" as const, label: "Buyer Portal" },
@@ -15,6 +17,7 @@ const nav = [
 
 export function SiteHeader() {
   const { theme, setTheme } = useTheme();
+  const { isAuthenticated, signOut } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -50,12 +53,20 @@ export function SiteHeader() {
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
           )}
-          <Button variant="secondary" size="sm" asChild>
-            <Link href="/auth/sign-in">Sign in</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/auth/sign-up">Get started</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button variant="secondary" size="sm" onClick={signOut}>
+              Sign out
+            </Button>
+          ) : (
+            <>
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/auth/sign-in">Sign in</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/auth/sign-up">Get started</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
