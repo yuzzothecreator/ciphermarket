@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                         .requestMatchers("/api/v1/openapi/**", "/api/v1/docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalogue/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/payments/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("MARKETPLACE_ADMIN")
                         .requestMatchers("/api/v1/audit/**").hasAnyRole("MARKETPLACE_ADMIN", "SECURITY_AUDITOR")
                         .anyRequest().authenticated()

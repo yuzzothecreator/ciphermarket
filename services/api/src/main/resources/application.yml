@@ -40,9 +40,19 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:ciphermarket}
           jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:ciphermarket}/protocol/openid-connect/certs
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 server:
   port: ${API_PORT:8080}
+  servlet:
+    multipart:
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:500MB}
+      max-request-size: ${UPLOAD_MAX_FILE_SIZE:500MB}
   error:
     include-message: never
     include-binding-errors: never
@@ -74,6 +84,36 @@ ciphermarket:
     address: ${VAULT_ADDR:http://localhost:8200}
     token: ${VAULT_TOKEN:dev-only-token}
     transit-key: ${VAULT_TRANSIT_KEY:ciphermarket-dek}
+  storage:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ROOT_USER:ciphermarket}
+    secret-key: ${MINIO_ROOT_PASSWORD:change_me_in_local_env}
+    bucket-quarantine: ${MINIO_BUCKET_QUARANTINE:ciphermarket-quarantine}
+    bucket-protected: ${MINIO_BUCKET_PROTECTED:ciphermarket-protected}
+  upload:
+    max-file-size-bytes: ${UPLOAD_MAX_FILE_SIZE:524288000}
+    session-ttl-minutes: ${UPLOAD_SESSION_TTL:30}
+    allowed-extensions:
+      - pdf
+      - zip
+      - png
+      - jpg
+      - jpeg
+      - svg
+      - psd
+      - ai
+      - eps
+  clamav:
+    host: ${CLAMAV_HOST:localhost}
+    port: ${CLAMAV_PORT:3310}
+    enabled: ${CLAMAV_ENABLED:true}
+  messaging:
+    upload-queue: ciphermarket.upload.processing
+    upload-dlq: ciphermarket.upload.processing.dlq
+  payment:
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET:local-dev-webhook-secret-change-me}
+    mock-provider-name: MOCK
+    app-base-url: ${APP_BASE_URL:http://localhost:3000}
 
 logging:
   pattern:
