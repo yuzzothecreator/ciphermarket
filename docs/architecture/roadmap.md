@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-## Phase 1 — Foundation ✅ (current)
+## Phase 1 — Foundation ✅
 
 - Monorepo, Docker Compose, Next.js, Spring Boot
 - PostgreSQL + Flyway foundation schema
@@ -11,19 +11,22 @@
 - Health checks, OpenAPI, audit hash chain
 - CI workflow, documentation, threat model
 
-## Phase 2 — Product management
+## Phase 2 — Product management ✅
 
-- Creator studio (full)
-- Products, versions, upload sessions
+- Creator studio (organisation, product CRUD, secure upload UI)
+- Products, versions, upload sessions (Flyway V2)
 - Quarantine storage, MIME validation, ClamAV
 - Envelope encryption (`EncryptionProvider`)
 - Publishing workflow
+- Keycloak PKCE auth in web app
 
-## Phase 3 — Commerce
+## Phase 3 — Commerce ✅ (current)
 
-- Catalogue, cart, checkout
-- Mock payment provider + webhook pipeline
-- Orders, entitlements, receipts, notifications
+- Public product catalogue API + UI
+- Shopping cart and checkout
+- Mock payment provider with HMAC-signed webhooks
+- Orders, entitlements (webhook-granted only), receipt emails
+- Buyer portal (orders + entitlements)
 
 ## Phase 4 — Secure delivery
 
