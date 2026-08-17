@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: ciphermarket-api
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:ciphermarket}
+    username: ${POSTGRES_USER:ciphermarket}
+    password: ${POSTGRES_PASSWORD:change_me_in_local_env}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:change_me_in_local_env}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:ciphermarket}
+    password: ${RABBITMQ_PASSWORD:change_me_in_local_env}
+    virtual-host: ${RABBITMQ_VHOST:ciphermarket}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:ciphermarket}
+          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:ciphermarket}/protocol/openid-connect/certs
+
+server:
+  port: ${API_PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,readiness
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  info:
+    env:
+      enabled: true
+
+ciphermarket:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  keycloak:
+    realm: ${KEYCLOAK_REALM:ciphermarket}
+  vault:
+    address: ${VAULT_ADDR:http://localhost:8200}
+    token: ${VAULT_TOKEN:dev-only-token}
+    transit-key: ${VAULT_TRANSIT_KEY:ciphermarket-dek}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{correlationId}] %logger{36} - %msg%n"
+  level:
+    root: INFO
+    com.ciphermarket: DEBUG
+    org.springframework.security: INFO
+
+springdoc:
+  api-docs:
+    path: /api/v1/openapi
+  swagger-ui:
+    path: /api/v1/docs
+
+info:
+  app:
+    name: CipherMarket API
+    description: Zero-trust marketplace backend
+    version: 0.1.0
