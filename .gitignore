@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+target/
+.next/
+out/
+*.tsbuildinfo
+*.class
+*.jar
+!**/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+coverage/
+test-results/
+playwright-report/
+.playwright/
+
+# Docker volumes (local)
+data/
+
+# Secrets
+*.pem
+*.key
+!infrastructure/keycloak/*.json
+secrets/
+
+# Java
+.mvn/wrapper/maven-wrapper.jar
+!services/api/.mvn/wrapper/maven-wrapper.jar

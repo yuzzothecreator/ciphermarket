@@ -1,0 +1,24 @@
+{
+  "name": "ciphermarket",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Zero-Trust Marketplace for Secure Digital Product Distribution, Licensing and Leak Tracing",
+  "scripts": {
+    "dev": "pnpm --filter @ciphermarket/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\""
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9"
+  }
+}
