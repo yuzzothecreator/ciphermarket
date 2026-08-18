@@ -50,8 +50,15 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Build web
-        run: pnpm --filter @ciphermarket/web build
+      - name: Build packages and web
+        run: pnpm --filter @ciphermarket/sdk-node --filter @ciphermarket/web build
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @ciphermarket/web exec playwright install --with-deps chromium
+
+      - name: Playwright smoke
+        working-directory: apps/web
+        run: pnpm test:e2e
 
   secret-scan:
     runs-on: ubuntu-latest
