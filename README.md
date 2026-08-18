@@ -26,8 +26,9 @@ ciphermarket/
 ├── services/api/          # Spring Boot modular monolith
 ├── packages/
 │   ├── ui/                # Shared design system
-│   └── contracts/         # Shared TypeScript types
-├── infrastructure/        # Docker, Keycloak, monitoring, scripts
+│   ├── contracts/         # Shared TypeScript types
+│   └── sdk-node/          # Typed Node.js API client
+├── infrastructure/        # Docker, Keycloak, monitoring, perf scripts
 └── docs/                  # Architecture, security, operations
 ```
 
@@ -63,6 +64,8 @@ Services:
 | Mailpit | http://localhost:8025 |
 | MinIO Console | http://localhost:9001 |
 | RabbitMQ | http://localhost:15672 |
+| Prometheus | http://localhost:9090 (`--profile monitoring`) |
+| Grafana | http://localhost:3001 (`--profile monitoring`) |
 
 ### 3. Run the API
 
@@ -79,28 +82,18 @@ pnpm install
 make web-dev
 ```
 
-## Phase 1 status (current)
+## Status
 
-Completed in this phase:
+Phases 1–6 are implemented in this repository:
 
-- Monorepo with pnpm workspaces
-- Docker Compose (PostgreSQL, Redis, RabbitMQ, MinIO, Vault, ClamAV, Keycloak, Mailpit)
-- Spring Boot API with modular package boundaries
-- Flyway foundation schema (users, organisations, memberships, categories, audit events)
-- Keycloak realm with platform roles
-- Organisation APIs with tenant isolation
-- Append-only audit trail with hash chaining
-- Next.js app with design system (ion-indigo accent, light/dark themes)
-- Public pages, auth redirects, live API health and categories
-- Unit tests for audit hashing and RBAC rules
-- GitHub Actions CI workflow
-- Architecture and threat-model documentation
+- Foundation, Keycloak, tenant isolation, audit hash chain
+- Creator Studio, quarantine upload, ClamAV, envelope encryption
+- Catalogue, cart, checkout, HMAC payment webhooks, entitlements
+- Ed25519 licences, access grants, watermarked/signed delivery
+- Security events, sealed audit batches, maker-checker admin console
+- Playwright smoke tests, Grafana dashboards, k6, prod Docker overlay, `@ciphermarket/sdk-node`
 
-Not yet implemented (Phases 2–6):
-
-- Product upload pipeline, encryption, malware scanning
-- Commerce, payments, entitlements, secure delivery
-- Security operations, E2E tests, full observability stack
+See [docs/architecture/roadmap.md](docs/architecture/roadmap.md) and [docs/operations/production-readiness.md](docs/operations/production-readiness.md).
 
 ## API documentation
 
@@ -122,6 +115,7 @@ When the API is running:
 - [Architecture](docs/architecture/system-architecture.md)
 - [Threat model](docs/security/threat-model.md)
 - [Local setup](docs/operations/local-setup.md)
+- [Production readiness](docs/operations/production-readiness.md)
 - [Security limitations](docs/security/limitations.md)
 
 ## License

@@ -37,17 +37,17 @@
 - Device registration and revocation
 - Download audit trail
 
-## Phase 5 — Security operations ✅ (current)
+## Phase 5 — Security operations ✅
 
 - Security event engine
 - Tamper-evident audit batches
 - Maker-checker approvals
 - Admin investigation UI
 
-## Phase 6 — Production readiness
+## Phase 6 — Production readiness ✅ (current)
 
-- Full test suite (Playwright E2E)
-- Observability stack
-- Performance testing
-- Deployment hardening
-- `@ciphermarket/sdk-node` (after API stabilises)
+- Playwright smoke tests for public pages
+- Grafana/Prometheus dashboard provisioning and ECS JSON logs in `prod`
+- k6 catalogue load script
+- Non-root web image, prod Compose overlay, security headers, in-process rate limit, secret guard
+- `@ciphermarket/sdk-node` typed client

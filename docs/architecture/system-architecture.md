@@ -45,26 +45,22 @@ flowchart TB
     api --> ClamAV
 ```
 
-## Module boundaries (Phase 1)
+## Module boundaries
 
 | Package | Responsibility |
 |---------|----------------|
 | `identity` | User profile provisioning from Keycloak claims |
 | `organisation` | Tenants, memberships, RBAC enforcement |
-| `catalog` | Categories (products in Phase 2) |
+| `catalog` / `product` | Categories, products, versions, publishing |
+| `upload` | Quarantine pipeline, MIME validation, ClamAV |
+| `encryption` | Envelope encryption via `EncryptionProvider` |
+| `commerce` | Catalogue, cart, checkout, signed payment webhooks |
+| `delivery` | Licences, access grants, decrypt-and-transform downloads |
 | `audit` | Append-only tamper-evident audit trail |
-| `security` | JWT conversion, Spring Security config |
+| `securityops` | Security events, sealed batches, maker-checker |
+| `security` | JWT conversion, headers, rate limiting |
 | `common` | Shared enums, exceptions, correlation IDs |
 | `health` | Custom health indicators |
-
-Future modules (planned):
-
-- `upload` — quarantine pipeline, MIME validation, ClamAV
-- `encryption` — envelope encryption via `EncryptionProvider`
-- `commerce` — orders, payments, webhooks
-- `entitlement` — licences, access grants, downloads
-- `disclosure` — confidential document workflow
-- `securityops` — security events, risk engine
 
 ## Tenant isolation
 
@@ -101,11 +97,13 @@ Audit events are:
 - Hash-chained (`event_hash` includes `previous_hash`)
 - Correlated via `X-Correlation-Id` request header
 
-## Deployment model (future)
+## Deployment model
 
-Phase 6 targets containerised deployment with:
+Containerised deployment uses non-root images and a production Spring profile:
 
-- Non-root Docker images
-- External managed PostgreSQL, Redis, RabbitMQ
-- Production Vault or cloud KMS
+- API image: `services/api/Dockerfile`
+- Web image: `apps/web/Dockerfile` (standalone Next.js)
+- Overlay: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
+- External managed PostgreSQL, Redis, RabbitMQ, and production Vault or cloud KMS in real environments
 - Prometheus + Grafana (`docker compose --profile monitoring`)
+- Details: [Production readiness](../operations/production-readiness.md)

@@ -100,7 +100,7 @@ flowchart LR
 | Keycloak misconfiguration | High | Requires operational hardening in deployment |
 | Insider with OWNER role | Medium | Audit trail; maker-checker in Phase 5 |
 | Browser PDF controls bypass | Medium | Honest documentation required |
-| DDoS / rate limiting | Medium | Rate limiting planned for API gateway Phase 6 |
+| DDoS / rate limiting | Medium | In-process per-IP limiter on the API; gateway/WAF still required for multi-instance and volumetric attacks |
 
 ## Review schedule
 
