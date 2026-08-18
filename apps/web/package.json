@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"E2E tests added in Phase 6\""
+    "test": "echo \"Use pnpm --filter @ciphermarket/web test:e2e for Playwright smoke tests\"",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ciphermarket/contracts": "workspace:*",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
+    "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
