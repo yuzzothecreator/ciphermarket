@@ -1,17 +1,87 @@
 "use client";
 
+import type { Entitlement } from "@ciphermarket/contracts";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@ciphermarket/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Download, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { listEntitlements, listOrders } from "@/lib/buyer-api";
+import {
+  createAccessGrant,
+  getDownloadUrl,
+  issueLicence,
+  listEntitlements,
+  listOrders,
+} from "@/lib/buyer-api";
 
 function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: currency || "GBP",
   }).format(cents / 100);
+}
+
+function EntitlementCard({
+  entitlement,
+  token,
+}: {
+  entitlement: Entitlement;
+  token: string;
+}) {
+  const [error, setError] = useState<string | null>(null);
+
+  const downloadMutation = useMutation({
+    mutationFn: async () => {
+      if (!entitlement.hasLicence) {
+        await issueLicence(token, entitlement.id);
+      }
+      const grant = await createAccessGrant(token, entitlement.id);
+      return grant;
+    },
+    onSuccess: (grant) => {
+      setError(null);
+      window.open(getDownloadUrl(grant.accessToken), "_blank", "noopener,noreferrer");
+    },
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : "Download failed.");
+    },
+  });
+
+  return (
+    <Card>
+      <CardContent className="py-5">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="font-medium">{entitlement.productName}</p>
+            <p className="text-xs text-muted-foreground">{entitlement.productType.replace("_", " ")}</p>
+          </div>
+          <Badge variant={entitlement.status === "ACTIVE" ? "accent" : "outline"}>
+            {entitlement.status}
+          </Badge>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Granted {new Date(entitlement.grantedAt).toLocaleString()}
+        </p>
+        {entitlement.status === "ACTIVE" && (
+          <Button
+            className="mt-4 w-full"
+            size="sm"
+            disabled={downloadMutation.isPending}
+            onClick={() => downloadMutation.mutate()}
+          >
+            {downloadMutation.isPending ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 size-4" />
+            )}
+            Secure download
+          </Button>
+        )}
+        {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+      </CardContent>
+    </Card>
+  );
 }
 
 export function BuyerPortal() {
@@ -45,11 +115,12 @@ export function BuyerPortal() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <Badge variant="outline" className="mb-4">
-        Phase 3
+        Phase 4
       </Badge>
       <h1 className="text-3xl font-semibold tracking-tight">Buyer portal</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        View order history and active entitlements granted after verified payment webhooks.
+        View orders and download purchased products via short-lived access grants. PDFs are
+        watermarked; source archives include signed manifests.
       </p>
 
       <div className="mt-8 flex gap-2">
@@ -60,7 +131,7 @@ export function BuyerPortal() {
           variant={tab === "entitlements" ? "default" : "secondary"}
           onClick={() => setTab("entitlements")}
         >
-          Entitlements
+          Downloads
         </Button>
       </div>
 
@@ -120,19 +191,7 @@ export function BuyerPortal() {
             <ul className="grid gap-4 sm:grid-cols-2">
               {entitlementsQuery.data?.map((entitlement) => (
                 <li key={entitlement.id}>
-                  <Card>
-                    <CardContent className="py-5">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium">Product {entitlement.productId.slice(0, 8)}…</p>
-                        <Badge variant={entitlement.status === "ACTIVE" ? "accent" : "outline"}>
-                          {entitlement.status}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Granted {new Date(entitlement.grantedAt).toLocaleString()}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <EntitlementCard entitlement={entitlement} token={accessToken} />
                 </li>
               ))}
             </ul>

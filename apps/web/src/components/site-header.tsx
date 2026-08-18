@@ -17,7 +17,7 @@ const nav = [
 
 export function SiteHeader() {
   const { theme, setTheme } = useTheme();
-  const { isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, isSecurityOps, signOut } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -40,6 +40,14 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {isSecurityOps && (
+            <Link
+              href="/admin"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Security ops
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">

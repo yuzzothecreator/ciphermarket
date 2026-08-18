@@ -1,12 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { buildSignOutUrl, getAccessToken } from "@/lib/auth";
+import { buildSignOutUrl, getAccessToken, parseJwtRoles } from "@/lib/auth";
 
 interface AuthContextValue {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  roles: string[];
+  isSecurityOps: boolean;
+  isMarketplaceAdmin: boolean;
   refresh: () => void;
   signOut: () => void;
 }
@@ -30,15 +33,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = buildSignOutUrl();
   }, []);
 
+  const roles = useMemo(() => parseJwtRoles(accessToken), [accessToken]);
+  const isMarketplaceAdmin = roles.includes("marketplace_admin");
+  const isSecurityOps = isMarketplaceAdmin || roles.includes("security_auditor");
+
   const value = useMemo(
     () => ({
       accessToken,
       isAuthenticated: Boolean(accessToken),
       isLoading,
+      roles,
+      isSecurityOps,
+      isMarketplaceAdmin,
       refresh,
       signOut,
     }),
-    [accessToken, isLoading, refresh, signOut],
+    [accessToken, isLoading, roles, isSecurityOps, isMarketplaceAdmin, refresh, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

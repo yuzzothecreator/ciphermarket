@@ -58,6 +58,20 @@ export function getAccessToken(): string | null {
   return token;
 }
 
+export function parseJwtRoles(token: string | null): string[] {
+  if (!token) {
+    return [];
+  }
+  try {
+    const payloadPart = token.split(".")[1];
+    const json = atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(json) as { realm_access?: { roles?: string[] } };
+    return payload.realm_access?.roles ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function clearAccessToken(): void {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
