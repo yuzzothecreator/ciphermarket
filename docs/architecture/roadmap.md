@@ -20,7 +20,7 @@
 - Publishing workflow
 - Keycloak PKCE auth in web app
 
-## Phase 3 — Commerce ✅ (current)
+## Phase 3 — Commerce ✅
 
 - Public product catalogue API + UI
 - Shopping cart and checkout
@@ -28,14 +28,16 @@
 - Orders, entitlements (webhook-granted only), receipt emails
 - Buyer portal (orders + entitlements)
 
-## Phase 4 — Secure delivery
+## Phase 4 — Secure delivery ✅
 
-- Licences, access grants, download limits
-- PDF watermarking (PDFBox)
-- Source-code signed manifests
-- Device registration, revocation
+- Ed25519 licence tokens issued on entitlement grant
+- Short-lived access grants with use limits
+- Decrypt-and-transform delivery pipeline
+- PDF watermarking (PDFBox) and source-code signed manifests
+- Device registration and revocation
+- Download audit trail
 
-## Phase 5 — Security operations
+## Phase 5 — Security operations ✅ (current)
 
 - Security event engine
 - Tamper-evident audit batches
