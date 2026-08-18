@@ -69,7 +69,20 @@ docker compose --profile monitoring up -d
 ```
 
 - Prometheus: http://localhost:9090
-- Grafana: http://localhost:3001
+- Grafana: http://localhost:3001 (provisioned **CipherMarket API** dashboard)
+
+## 8. Playwright smoke
+
+```bash
+pnpm --filter @ciphermarket/web build
+pnpm --filter @ciphermarket/web test:e2e
+```
+
+## 9. Load script (requires k6 and a running API)
+
+```bash
+k6 run infrastructure/perf/k6-catalogue.js
+```
 
 ## Troubleshooting
 

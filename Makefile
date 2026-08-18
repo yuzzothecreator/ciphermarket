@@ -1,4 +1,4 @@
-.PHONY: help up down logs ps migrate api-dev web-dev build test lint format infra-wait
+.PHONY: help up down logs ps migrate api-dev web-dev build test lint format infra-wait e2e perf monitoring
 
 help:
 	@echo "CipherMarket — local development commands"
@@ -12,6 +12,9 @@ help:
 	@echo "  make web-dev     Run Next.js web app"
 	@echo "  make build       Build all packages"
 	@echo "  make test        Run all tests"
+	@echo "  make e2e         Playwright public-page smoke tests"
+	@echo "  make perf        k6 catalogue load (API must be running)"
+	@echo "  make monitoring  Start Prometheus and Grafana"
 	@echo "  make lint        Lint frontend packages"
 	@echo "  make format      Format frontend files"
 	@echo "  make infra-wait  Wait until core services are healthy"
@@ -53,3 +56,12 @@ lint:
 
 format:
 	pnpm format
+
+e2e:
+	pnpm --filter @ciphermarket/web test:e2e
+
+perf:
+	k6 run infrastructure/perf/k6-catalogue.js
+
+monitoring:
+	docker compose --profile monitoring up -d
