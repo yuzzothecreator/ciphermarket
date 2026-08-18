@@ -1,0 +1,49 @@
+# Production profile — never use local default secrets with this profile.
+# Startup fails if placeholder credentials are still present.
+
+spring:
+  jpa:
+    show-sql: false
+
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: false
+
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    root: INFO
+    com.ciphermarket: INFO
+    org.springframework.security: WARN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+ciphermarket:
+  security:
+    hsts-enabled: true
+  rate-limit:
+    enabled: true
+    requests-per-minute: ${RATE_LIMIT_RPM:60}
+    trust-forwarded-for: ${RATE_LIMIT_TRUST_FORWARDED_FOR:true}
