@@ -12,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
         MessagingProperties.class,
         PaymentProperties.class,
         DeliveryProperties.class,
-        LicenceProperties.class
+        LicenceProperties.class,
+        RateLimitProperties.class
 })
 public class CipherMarketPropertiesConfig {
 }
