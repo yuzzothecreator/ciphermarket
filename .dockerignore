@@ -1,0 +1,16 @@
+.git
+**/.next
+**/node_modules
+**/target
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+**/.playwright
+**/.turbo
+*.md
+docs
+agent-transcripts
+.env
+.env.*
+!.env.example
