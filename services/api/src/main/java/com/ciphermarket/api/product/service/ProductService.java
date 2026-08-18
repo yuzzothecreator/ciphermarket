@@ -20,6 +20,7 @@ import com.ciphermarket.api.product.repository.ProductAssetRepository;
 import com.ciphermarket.api.product.repository.ProductRepository;
 import com.ciphermarket.api.product.repository.ProductVersionRepository;
 import com.ciphermarket.api.security.AuthenticatedUser;
+import com.ciphermarket.api.securityops.service.SecurityEventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class ProductService {
     private final OrganisationService organisationService;
     private final UserProfileService userProfileService;
     private final AuditService auditService;
+    private final SecurityEventService securityEventService;
 
     public ProductService(
             ProductRepository productRepository,
@@ -44,7 +46,8 @@ public class ProductService {
             ProductAssetRepository assetRepository,
             OrganisationService organisationService,
             UserProfileService userProfileService,
-            AuditService auditService
+            AuditService auditService,
+            SecurityEventService securityEventService
     ) {
         this.productRepository = productRepository;
         this.versionRepository = versionRepository;
@@ -52,6 +55,7 @@ public class ProductService {
         this.organisationService = organisationService;
         this.userProfileService = userProfileService;
         this.auditService = auditService;
+        this.securityEventService = securityEventService;
     }
 
     @Transactional
@@ -237,6 +241,16 @@ public class ProductService {
                 "product",
                 product.getId(),
                 null,
+                Map.of("versionId", versionId.toString())
+        );
+        securityEventService.record(
+                organisationId,
+                profile.getId(),
+                "PRODUCT_PUBLISHED",
+                com.ciphermarket.api.common.enums.SecurityEventSeverity.LOW,
+                "Product",
+                product.getId(),
+                "Product published to catalogue",
                 Map.of("versionId", versionId.toString())
         );
 

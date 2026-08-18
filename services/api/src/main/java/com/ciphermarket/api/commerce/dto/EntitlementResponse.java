@@ -9,17 +9,28 @@ import java.util.UUID;
 public record EntitlementResponse(
         UUID id,
         UUID productId,
+        String productName,
+        String productType,
         UUID orderId,
         EntitlementStatus status,
-        Instant grantedAt
+        Instant grantedAt,
+        boolean hasLicence
 ) {
-    public static EntitlementResponse from(Entitlement entitlement) {
+    public static EntitlementResponse from(
+            Entitlement entitlement,
+            String productName,
+            String productType,
+            boolean hasLicence
+    ) {
         return new EntitlementResponse(
                 entitlement.getId(),
                 entitlement.getProductId(),
+                productName,
+                productType,
                 entitlement.getOrderId(),
                 entitlement.getStatus(),
-                entitlement.getGrantedAt()
+                entitlement.getGrantedAt(),
+                hasLicence
         );
     }
 }

@@ -33,6 +33,9 @@ public class Entitlement {
     @Column(name = "order_item_id", nullable = false)
     private UUID orderItemId;
 
+    @Column(name = "product_version_id")
+    private UUID productVersionId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EntitlementStatus status = EntitlementStatus.ACTIVE;
@@ -55,12 +58,13 @@ public class Entitlement {
     protected Entitlement() {
     }
 
-    public Entitlement(UUID buyerUserId, UUID productId, UUID orderId, UUID orderItemId) {
+    public Entitlement(UUID buyerUserId, UUID productId, UUID orderId, UUID orderItemId, UUID productVersionId) {
         this.id = UUID.randomUUID();
         this.buyerUserId = buyerUserId;
         this.productId = productId;
         this.orderId = orderId;
         this.orderItemId = orderItemId;
+        this.productVersionId = productVersionId;
         this.grantedAt = Instant.now();
     }
 
@@ -99,11 +103,20 @@ public class Entitlement {
         return orderItemId;
     }
 
+    public UUID getProductVersionId() {
+        return productVersionId;
+    }
+
     public EntitlementStatus getStatus() {
         return status;
     }
 
     public Instant getGrantedAt() {
         return grantedAt;
+    }
+
+    public void revoke() {
+        this.status = EntitlementStatus.REVOKED;
+        this.revokedAt = Instant.now();
     }
 }

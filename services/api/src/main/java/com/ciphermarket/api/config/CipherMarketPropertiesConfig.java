@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Configuration;
         UploadProperties.class,
         ClamAvProperties.class,
         MessagingProperties.class,
-        PaymentProperties.class
+        PaymentProperties.class,
+        DeliveryProperties.class,
+        LicenceProperties.class
 })
 public class CipherMarketPropertiesConfig {
 }

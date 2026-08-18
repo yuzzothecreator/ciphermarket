@@ -15,6 +15,8 @@ import com.ciphermarket.api.commerce.repository.PaymentRepository;
 import com.ciphermarket.api.commerce.repository.PaymentWebhookEventRepository;
 import com.ciphermarket.api.common.enums.PaymentStatus;
 import com.ciphermarket.api.common.exception.ResourceNotFoundException;
+import com.ciphermarket.api.delivery.service.LicenceService;
+import com.ciphermarket.api.securityops.service.SecurityEventService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +38,11 @@ public class PaymentWebhookService {
     private final OrderItemRepository orderItemRepository;
     private final EntitlementRepository entitlementRepository;
     private final EntitlementService entitlementService;
+    private final LicenceService licenceService;
     private final OrderNotificationService notificationService;
     private final PaymentWebhookSigner signer;
     private final AuditService auditService;
+    private final SecurityEventService securityEventService;
     private final ObjectMapper objectMapper;
 
     public PaymentWebhookService(
@@ -48,9 +52,11 @@ public class PaymentWebhookService {
             OrderItemRepository orderItemRepository,
             EntitlementRepository entitlementRepository,
             EntitlementService entitlementService,
+            LicenceService licenceService,
             OrderNotificationService notificationService,
             PaymentWebhookSigner signer,
             AuditService auditService,
+            SecurityEventService securityEventService,
             ObjectMapper objectMapper
     ) {
         this.webhookEventRepository = webhookEventRepository;
@@ -59,9 +65,11 @@ public class PaymentWebhookService {
         this.orderItemRepository = orderItemRepository;
         this.entitlementRepository = entitlementRepository;
         this.entitlementService = entitlementService;
+        this.licenceService = licenceService;
         this.notificationService = notificationService;
         this.signer = signer;
         this.auditService = auditService;
+        this.securityEventService = securityEventService;
         this.objectMapper = objectMapper;
     }
 
@@ -121,6 +129,7 @@ public class PaymentWebhookService {
         for (OrderItem item : items) {
             if (entitlementRepository.findByOrderItemId(item.getId()).isEmpty()) {
                 Entitlement entitlement = entitlementService.grant(order.getBuyerUserId(), item);
+                licenceService.issueForEntitlement(entitlement);
                 auditService.record(
                         item.getOrganisationId(),
                         order.getBuyerUserId(),
@@ -130,6 +139,16 @@ public class PaymentWebhookService {
                         entitlement.getId(),
                         null,
                         Map.of("productId", item.getProductId(), "orderId", order.getId())
+                );
+                securityEventService.record(
+                        item.getOrganisationId(),
+                        order.getBuyerUserId(),
+                        "ENTITLEMENT_GRANTED",
+                        com.ciphermarket.api.common.enums.SecurityEventSeverity.INFO,
+                        "Entitlement",
+                        entitlement.getId(),
+                        "Entitlement granted after verified payment",
+                        Map.of("productId", item.getProductId())
                 );
             }
         }
@@ -143,6 +162,16 @@ public class PaymentWebhookService {
                 payment.getId(),
                 Map.of("status", PaymentStatus.PENDING.name()),
                 Map.of("status", PaymentStatus.SUCCEEDED.name(), "orderId", order.getId())
+        );
+        securityEventService.record(
+                null,
+                order.getBuyerUserId(),
+                "PAYMENT_CONFIRMED",
+                com.ciphermarket.api.common.enums.SecurityEventSeverity.MEDIUM,
+                "Payment",
+                payment.getId(),
+                "Payment confirmed via signed webhook",
+                Map.of("orderId", order.getId())
         );
 
         webhookEvent.markProcessed();

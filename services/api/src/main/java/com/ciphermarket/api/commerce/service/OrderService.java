@@ -8,8 +8,11 @@ import com.ciphermarket.api.commerce.repository.EntitlementRepository;
 import com.ciphermarket.api.commerce.repository.OrderItemRepository;
 import com.ciphermarket.api.commerce.repository.OrderRepository;
 import com.ciphermarket.api.common.exception.ResourceNotFoundException;
+import com.ciphermarket.api.delivery.repository.LicenceRepository;
 import com.ciphermarket.api.identity.domain.UserProfile;
 import com.ciphermarket.api.identity.service.UserProfileService;
+import com.ciphermarket.api.product.domain.Product;
+import com.ciphermarket.api.product.repository.ProductRepository;
 import com.ciphermarket.api.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,17 +26,23 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final EntitlementRepository entitlementRepository;
+    private final ProductRepository productRepository;
+    private final LicenceRepository licenceRepository;
     private final UserProfileService userProfileService;
 
     public OrderService(
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
             EntitlementRepository entitlementRepository,
+            ProductRepository productRepository,
+            LicenceRepository licenceRepository,
             UserProfileService userProfileService
     ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.entitlementRepository = entitlementRepository;
+        this.productRepository = productRepository;
+        this.licenceRepository = licenceRepository;
         this.userProfileService = userProfileService;
     }
 
@@ -57,7 +66,13 @@ public class OrderService {
     public List<EntitlementResponse> listMyEntitlements(AuthenticatedUser user) {
         UserProfile profile = userProfileService.requireProfileEntity(user.keycloakSub());
         return entitlementRepository.findByBuyerUserIdOrderByGrantedAtDesc(profile.getId()).stream()
-                .map(EntitlementResponse::from)
+                .map(entitlement -> {
+                    Product product = productRepository.findById(entitlement.getProductId()).orElse(null);
+                    String name = product != null ? product.getName() : "Unknown product";
+                    String type = product != null ? product.getProductType().name() : "GENERAL";
+                    boolean hasLicence = licenceRepository.findByEntitlementId(entitlement.getId()).isPresent();
+                    return EntitlementResponse.from(entitlement, name, type, hasLicence);
+                })
                 .toList();
     }
 

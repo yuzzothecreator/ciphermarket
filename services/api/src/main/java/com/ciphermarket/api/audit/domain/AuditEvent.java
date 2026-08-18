@@ -125,4 +125,32 @@ public class AuditEvent {
     public String getPreviousHash() {
         return previousHash;
     }
+
+    public UUID getOrganisationId() {
+        return organisationId;
+    }
+
+    public UUID getActorUserId() {
+        return actorUserId;
+    }
+
+    public String getActorKeycloakSub() {
+        return actorKeycloakSub;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public UUID getResourceId() {
+        return resourceId;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 }
