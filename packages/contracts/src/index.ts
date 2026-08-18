@@ -249,7 +249,121 @@ export interface Order {
 export interface Entitlement {
   id: string;
   productId: string;
+  productName: string;
+  productType: ProductType;
   orderId: string;
   status: EntitlementStatus;
   grantedAt: string;
+  hasLicence: boolean;
+}
+
+export interface Licence {
+  id: string;
+  entitlementId: string;
+  productId: string;
+  productVersionId: string;
+  signedToken: string;
+  issuedAt: string;
+  expiresAt: string;
+  status: string;
+}
+
+export interface AccessGrant {
+  id: string;
+  accessToken: string;
+  expiresAt: string;
+  maxUses: number;
+  useCount: number;
+}
+
+export interface RegisteredDevice {
+  id: string;
+  label: string;
+  status: string;
+  registeredAt: string;
+  lastSeenAt: string | null;
+}
+
+export interface RegisterDeviceRequest {
+  fingerprint: string;
+  label: string;
+}
+
+export interface CreateAccessGrantRequest {
+  deviceId?: string | null;
+}
+
+export type SecurityEventSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type SecurityEventStatus = "OPEN" | "ACKNOWLEDGED" | "CLOSED";
+export type ApprovalActionType = "PRODUCT_SUSPEND" | "ENTITLEMENT_REVOKE" | "LICENCE_REVOKE";
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+
+export interface SecurityEvent {
+  id: string;
+  organisationId: string | null;
+  actorUserId: string | null;
+  eventType: string;
+  severity: SecurityEventSeverity;
+  status: SecurityEventStatus;
+  resourceType: string | null;
+  resourceId: string | null;
+  summary: string;
+  details?: Record<string, unknown> | null;
+  correlationId: string | null;
+  createdAt: string;
+}
+
+export interface AuditEventRecord {
+  id: string;
+  organisationId: string | null;
+  actorUserId: string | null;
+  actorKeycloakSub: string | null;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  correlationId: string;
+  eventHash: string;
+  previousHash: string;
+  createdAt: string;
+}
+
+export interface AuditVerifyResult {
+  intact: boolean;
+  eventCount: number;
+  headHash: string;
+  brokenAtEventId: string | null;
+  detail: string;
+}
+
+export interface AuditBatch {
+  id: string;
+  firstEventId: string;
+  lastEventId: string;
+  eventCount: number;
+  rootHash: string;
+  previousBatchHash: string | null;
+  sealedByUserId: string | null;
+  sealedAt: string;
+}
+
+export interface ApprovalRequestRecord {
+  id: string;
+  actionType: ApprovalActionType;
+  resourceType: string;
+  resourceId: string;
+  organisationId: string | null;
+  payload?: Record<string, unknown> | null;
+  reason: string;
+  status: ApprovalStatus;
+  requestedBy: string;
+  decidedBy: string | null;
+  decisionReason: string | null;
+  requestedAt: string;
+  decidedAt: string | null;
+}
+
+export interface CreateApprovalRequest {
+  actionType: ApprovalActionType;
+  resourceId: string;
+  reason: string;
 }
