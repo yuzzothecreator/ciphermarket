@@ -21,6 +21,7 @@ import {
   uploadSessionFile,
 } from "@/lib/creator-api";
 import { DisclosureStudioPanel } from "@/components/disclosure-studio-panel";
+import { SalesAnalyticsPanel } from "@/components/sales-analytics-panel";
 
 const inputClass =
   "flex h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -66,6 +67,7 @@ export function CreatorStudio() {
   });
 
   const activeOrgId = selectedOrgId || orgsQuery.data?.[0]?.id || "";
+  const activeOrg = orgsQuery.data?.find((org) => org.id === activeOrgId) ?? null;
 
   const productsQuery = useQuery({
     queryKey: ["products", activeOrgId],
@@ -248,6 +250,13 @@ export function CreatorStudio() {
         )}
       </div>
 
+      {activeOrgId && (
+        <SalesAnalyticsPanel
+          token={accessToken}
+          organisationId={activeOrgId}
+          organisationSlug={activeOrg?.slug}
+        />
+      )}
       {activeOrgId && <DisclosureStudioPanel token={accessToken} organisationId={activeOrgId} />}
     </div>
   );
@@ -261,8 +270,8 @@ function PageHeader() {
       </Badge>
       <h1 className="text-3xl font-semibold tracking-tight">Creator Studio</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        Create products, upload assets through the secure quarantine pipeline, publish versions, and
-        run confidential disclosures with hashed evidence trails.
+        Create products, upload assets through the secure quarantine pipeline, publish versions,
+        review sales, and run confidential disclosures with hashed evidence trails.
       </p>
     </>
   );

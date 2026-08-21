@@ -6,12 +6,20 @@ import type {
   Organisation,
   Product,
   ProductVersion,
+  SalesAnalytics,
   UploadSession,
 } from "@ciphermarket/contracts";
 import { clientFetch, clientUpload } from "@/lib/client-api";
 
 export function listOrganisations(token: string) {
   return clientFetch<Organisation[]>("/api/v1/organisations", { token });
+}
+
+export function getSalesAnalytics(token: string, organisationId: string) {
+  return clientFetch<SalesAnalytics>(
+    `/api/v1/organisations/${organisationId}/analytics/sales`,
+    { token },
+  );
 }
 
 export function createOrganisation(token: string, body: CreateOrganisationRequest) {

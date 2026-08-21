@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { SuspiciousReportForm } from "@/components/suspicious-report-form";
 import { useAuth } from "@/lib/auth-context";
 import { addToCart, getCatalogueProduct } from "@/lib/buyer-api";
 
@@ -51,17 +52,39 @@ export function ProductDetailView() {
       </Link>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
-            <Badge variant="outline">{product.productType.replace("_", " ")}</Badge>
+        <div className="lg:col-span-2 space-y-8">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-semibold tracking-tight">{product.name}</h1>
+              <Badge variant="outline">{product.productType.replace("_", " ")}</Badge>
+            </div>
+            <p className="mt-4 text-muted-foreground">
+              {product.fullDescription || product.shortDescription}
+            </p>
+            {product.usageTerms && (
+              <section className="mt-8">
+                <h2 className="font-medium">Usage terms</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{product.usageTerms}</p>
+              </section>
+            )}
+            {product.organisationSlug && (
+              <p className="mt-6 text-sm text-muted-foreground">
+                <Link
+                  href={`/creators/${product.organisationSlug}`}
+                  className="hover:text-foreground"
+                >
+                  More from this creator →
+                </Link>
+              </p>
+            )}
           </div>
-          <p className="mt-4 text-muted-foreground">{product.fullDescription || product.shortDescription}</p>
-          {product.usageTerms && (
-            <section className="mt-8">
-              <h2 className="font-medium">Usage terms</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{product.usageTerms}</p>
-            </section>
+
+          {isAuthenticated && accessToken && (
+            <SuspiciousReportForm
+              token={accessToken}
+              resourceType="Product"
+              resourceId={product.id}
+            />
           )}
         </div>
 
@@ -95,7 +118,9 @@ export function ProductDetailView() {
             )}
             {addMutation.isError && (
               <p className="text-sm text-destructive">
-                {addMutation.error instanceof Error ? addMutation.error.message : "Failed to add to cart."}
+                {addMutation.error instanceof Error
+                  ? addMutation.error.message
+                  : "Failed to add to cart."}
               </p>
             )}
           </CardContent>

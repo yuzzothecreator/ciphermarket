@@ -17,6 +17,7 @@ import {
   listOrders,
   requestRefund,
 } from "@/lib/buyer-api";
+import { SuspiciousReportForm } from "@/components/suspicious-report-form";
 import {
   acceptDisclosure,
   getDisclosureDownloadUrl,
@@ -190,7 +191,9 @@ function DisclosureInboxCard({
 export function BuyerPortal() {
   const { accessToken, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"orders" | "entitlements" | "disclosures" | "refunds">("orders");
+  const [tab, setTab] = useState<"orders" | "entitlements" | "disclosures" | "refunds" | "security">(
+    "orders",
+  );
   const [refundReason, setRefundReason] = useState("Product not as described");
   const [refundError, setRefundError] = useState<string | null>(null);
 
@@ -258,6 +261,12 @@ export function BuyerPortal() {
           onClick={() => setTab("refunds")}
         >
           Refunds
+        </Button>
+        <Button
+          variant={tab === "security" ? "default" : "secondary"}
+          onClick={() => setTab("security")}
+        >
+          Security
         </Button>
       </div>
 
@@ -426,6 +435,8 @@ export function BuyerPortal() {
             </ul>
           </>
         )}
+
+        {tab === "security" && <SuspiciousReportForm token={accessToken} resourceType="Account" />}
       </div>
     </div>
   );

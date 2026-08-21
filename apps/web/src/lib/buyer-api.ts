@@ -4,20 +4,48 @@ import type {
   Cart,
   CatalogueProduct,
   CatalogueProductDetail,
+  CatalogueSearchParams,
   CheckoutResponse,
   CreateAccessGrantRequest,
+  CreateSuspiciousReportRequest,
+  CreatorStorefront,
   Entitlement,
   Licence,
   Order,
   RefundRequestRecord,
   RegisterDeviceRequest,
   RegisteredDevice,
+  SuspiciousReportResponse,
 } from "@ciphermarket/contracts";
 import { clientFetch } from "@/lib/client-api";
 
-export function listCatalogueProducts(categoryId?: string) {
-  const query = categoryId ? `?categoryId=${categoryId}` : "";
+export function listCatalogueProducts(params?: CatalogueSearchParams | string) {
+  const search = new URLSearchParams();
+  if (typeof params === "string") {
+    if (params) search.set("categoryId", params);
+  } else if (params) {
+    if (params.q) search.set("q", params.q);
+    if (params.categoryId) search.set("categoryId", params.categoryId);
+    if (params.organisationId) search.set("organisationId", params.organisationId);
+    if (params.productType) search.set("productType", params.productType);
+    if (params.minPriceCents != null) search.set("minPriceCents", String(params.minPriceCents));
+    if (params.maxPriceCents != null) search.set("maxPriceCents", String(params.maxPriceCents));
+    if (params.sort) search.set("sort", params.sort);
+  }
+  const query = search.toString() ? `?${search}` : "";
   return clientFetch<CatalogueProduct[]>(`/api/v1/catalogue/products${query}`);
+}
+
+export function getCreatorStorefront(slug: string) {
+  return clientFetch<CreatorStorefront>(`/api/v1/catalogue/creators/${encodeURIComponent(slug)}`);
+}
+
+export function reportSuspiciousActivity(token: string, body: CreateSuspiciousReportRequest) {
+  return clientFetch<SuspiciousReportResponse>("/api/v1/reports/suspicious", {
+    method: "POST",
+    token,
+    json: body,
+  });
 }
 
 export function getCatalogueProduct(productId: string) {
