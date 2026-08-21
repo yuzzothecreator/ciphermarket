@@ -5,6 +5,7 @@ import type {
   AuditEventRecord,
   AuditVerifyResult,
   CreateApprovalRequest,
+  RefundRequestRecord,
   SecurityEvent,
   SecurityEventStatus,
 } from "@ciphermarket/contracts";
@@ -61,5 +62,25 @@ export function decideApproval(
     method: "POST",
     token,
     json: { decision, decisionReason },
+  });
+}
+
+export function listAdminRefunds(token: string, status?: string) {
+  const query = status ? `?status=${status}` : "";
+  return clientFetch<RefundRequestRecord[]>(`/api/v1/admin/refunds${query}`, { token });
+}
+
+export function rejectAdminRefund(token: string, refundId: string, rejectionReason: string) {
+  return clientFetch<RefundRequestRecord>(`/api/v1/admin/refunds/${refundId}/reject`, {
+    method: "POST",
+    token,
+    json: { rejectionReason },
+  });
+}
+
+export function submitRefundForApproval(token: string, refundId: string) {
+  return clientFetch<RefundRequestRecord>(`/api/v1/admin/refunds/${refundId}/submit-for-approval`, {
+    method: "POST",
+    token,
   });
 }

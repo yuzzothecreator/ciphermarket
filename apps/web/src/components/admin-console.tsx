@@ -11,11 +11,14 @@ import {
   acknowledgeSecurityEvent,
   createApproval,
   decideApproval,
+  listAdminRefunds,
   listApprovals,
   listAuditBatches,
   listAuditEvents,
   listSecurityEvents,
+  rejectAdminRefund,
   sealAuditBatch,
+  submitRefundForApproval,
   verifyAuditChain,
 } from "@/lib/ops-api";
 
@@ -23,11 +26,12 @@ const actionTypes: ApprovalActionType[] = [
   "PRODUCT_SUSPEND",
   "ENTITLEMENT_REVOKE",
   "LICENCE_REVOKE",
+  "REFUND_APPROVE",
 ];
 
 export function AdminConsole() {
   const { accessToken, isAuthenticated, isSecurityOps, isMarketplaceAdmin } = useAuth();
-  const [tab, setTab] = useState<"events" | "audit" | "approvals">("events");
+  const [tab, setTab] = useState<"events" | "audit" | "approvals" | "refunds">("events");
   const queryClient = useQueryClient();
 
   const eventsQuery = useQuery({
@@ -60,6 +64,12 @@ export function AdminConsole() {
     enabled: Boolean(accessToken && isSecurityOps && tab === "approvals"),
   });
 
+  const refundsQuery = useQuery({
+    queryKey: ["admin-refunds"],
+    queryFn: () => listAdminRefunds(accessToken!),
+    enabled: Boolean(accessToken && isMarketplaceAdmin && tab === "refunds"),
+  });
+
   if (!isAuthenticated || !accessToken) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -86,12 +96,12 @@ export function AdminConsole() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <Badge variant="outline" className="mb-4">
-        Phase 5
+        Operations
       </Badge>
       <h1 className="text-3xl font-semibold tracking-tight">Security operations</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        Investigate security events, verify the tamper-evident audit chain, and process maker-checker
-        approvals.
+        Investigate security events, verify the tamper-evident audit chain, process maker-checker
+        approvals, and review refund escalations.
       </p>
 
       <div className="mt-8 flex flex-wrap gap-2">
@@ -107,6 +117,14 @@ export function AdminConsole() {
         >
           Approvals
         </Button>
+        {isMarketplaceAdmin && (
+          <Button
+            variant={tab === "refunds" ? "default" : "secondary"}
+            onClick={() => setTab("refunds")}
+          >
+            Refunds
+          </Button>
+        )}
       </div>
 
       <div className="mt-8">
@@ -221,6 +239,18 @@ export function AdminConsole() {
             onChanged={() => queryClient.invalidateQueries({ queryKey: ["approvals"] })}
           />
         )}
+
+        {tab === "refunds" && isMarketplaceAdmin && (
+          <RefundsPanel
+            token={accessToken}
+            refunds={refundsQuery.data ?? []}
+            loading={refundsQuery.isLoading}
+            onChanged={() => {
+              queryClient.invalidateQueries({ queryKey: ["admin-refunds"] });
+              queryClient.invalidateQueries({ queryKey: ["approvals"] });
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -236,6 +266,100 @@ function SealBatchButton({ token, onSealed }: { token: string; onSealed: () => v
       {mutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
       Seal batch
     </Button>
+  );
+}
+
+function RefundsPanel({
+  token,
+  refunds,
+  loading,
+  onChanged,
+}: {
+  token: string;
+  refunds: Awaited<ReturnType<typeof listAdminRefunds>>;
+  loading: boolean;
+  onChanged: () => void;
+}) {
+  const [rejectReason, setRejectReason] = useState("Does not meet refund policy");
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Reject immediately, or submit for maker-checker approval. A different admin must approve
+        REFUND_APPROVE before entitlements are revoked.
+      </p>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {loading && <p className="text-sm text-muted-foreground">Loading refunds…</p>}
+      <ul className="space-y-3">
+        {refunds.map((refund) => (
+          <li key={refund.id}>
+            <Card>
+              <CardContent className="space-y-3 py-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">
+                      {new Intl.NumberFormat("en-GB", {
+                        style: "currency",
+                        currency: refund.currency || "GBP",
+                      }).format(refund.amountCents / 100)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{refund.reason}</p>
+                    <p className="mt-1 font-mono text-xs text-muted-foreground">
+                      Order {refund.orderId}
+                    </p>
+                  </div>
+                  <Badge variant={refund.status === "REQUESTED" ? "accent" : "outline"}>
+                    {refund.status}
+                  </Badge>
+                </div>
+                {refund.status === "REQUESTED" && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        submitRefundForApproval(token, refund.id)
+                          .then(() => {
+                            setError(null);
+                            onChanged();
+                          })
+                          .catch((err: unknown) =>
+                            setError(err instanceof Error ? err.message : "Submit failed"),
+                          )
+                      }
+                    >
+                      Submit for approval
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        rejectAdminRefund(token, refund.id, rejectReason)
+                          .then(() => {
+                            setError(null);
+                            onChanged();
+                          })
+                          .catch((err: unknown) =>
+                            setError(err instanceof Error ? err.message : "Reject failed"),
+                          )
+                      }
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </li>
+        ))}
+      </ul>
+      <input
+        className="flex h-10 w-full max-w-md rounded-lg border border-border bg-background px-3 text-sm"
+        value={rejectReason}
+        onChange={(e) => setRejectReason(e.target.value)}
+        placeholder="Rejection reason"
+      />
+    </div>
   );
 }
 

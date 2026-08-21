@@ -1,6 +1,6 @@
 import type {
-  AddToCartRequest,
   AccessGrant,
+  AddToCartRequest,
   Cart,
   CatalogueProduct,
   CatalogueProductDetail,
@@ -9,6 +9,7 @@ import type {
   Entitlement,
   Licence,
   Order,
+  RefundRequestRecord,
   RegisterDeviceRequest,
   RegisteredDevice,
 } from "@ciphermarket/contracts";
@@ -93,4 +94,23 @@ export function registerDevice(token: string, body: RegisterDeviceRequest) {
 
 export function listDevices(token: string) {
   return clientFetch<RegisteredDevice[]>("/api/v1/devices", { token });
+}
+
+export function requestRefund(token: string, orderId: string, reason: string) {
+  return clientFetch<RefundRequestRecord>(`/api/v1/orders/${orderId}/refund-requests`, {
+    method: "POST",
+    token,
+    json: { reason },
+  });
+}
+
+export function listMyRefunds(token: string) {
+  return clientFetch<RefundRequestRecord[]>("/api/v1/refund-requests", { token });
+}
+
+export function cancelRefund(token: string, refundId: string) {
+  return clientFetch<RefundRequestRecord>(`/api/v1/refund-requests/${refundId}/cancel`, {
+    method: "POST",
+    token,
+  });
 }

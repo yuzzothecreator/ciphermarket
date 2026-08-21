@@ -8,11 +8,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import {
+  cancelRefund,
   createAccessGrant,
   getDownloadUrl,
   issueLicence,
   listEntitlements,
+  listMyRefunds,
   listOrders,
+  requestRefund,
 } from "@/lib/buyer-api";
 import {
   acceptDisclosure,
@@ -186,7 +189,10 @@ function DisclosureInboxCard({
 
 export function BuyerPortal() {
   const { accessToken, isAuthenticated } = useAuth();
-  const [tab, setTab] = useState<"orders" | "entitlements" | "disclosures">("orders");
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState<"orders" | "entitlements" | "disclosures" | "refunds">("orders");
+  const [refundReason, setRefundReason] = useState("Product not as described");
+  const [refundError, setRefundError] = useState<string | null>(null);
 
   const ordersQuery = useQuery({
     queryKey: ["orders"],
@@ -203,6 +209,12 @@ export function BuyerPortal() {
   const inboxQuery = useQuery({
     queryKey: ["disclosure-inbox"],
     queryFn: () => listDisclosureInbox(accessToken!),
+    enabled: Boolean(accessToken),
+  });
+
+  const refundsQuery = useQuery({
+    queryKey: ["my-refunds"],
+    queryFn: () => listMyRefunds(accessToken!),
     enabled: Boolean(accessToken),
   });
 
@@ -241,6 +253,12 @@ export function BuyerPortal() {
         >
           Disclosures
         </Button>
+        <Button
+          variant={tab === "refunds" ? "default" : "secondary"}
+          onClick={() => setTab("refunds")}
+        >
+          Refunds
+        </Button>
       </div>
 
       <div className="mt-8">
@@ -276,6 +294,26 @@ export function BuyerPortal() {
                           </li>
                         ))}
                       </ul>
+                      {order.status === "PAID" && (
+                        <Button
+                          className="mt-4"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() =>
+                            requestRefund(accessToken, order.id, refundReason)
+                              .then(() => {
+                                setRefundError(null);
+                                queryClient.invalidateQueries({ queryKey: ["my-refunds"] });
+                                setTab("refunds");
+                              })
+                              .catch((err: unknown) =>
+                                setRefundError(err instanceof Error ? err.message : "Refund failed"),
+                              )
+                          }
+                        >
+                          Request refund
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 </li>
@@ -322,6 +360,67 @@ export function BuyerPortal() {
               {inboxQuery.data?.map((request) => (
                 <li key={request.id}>
                   <DisclosureInboxCard request={request} token={accessToken} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {tab === "refunds" && (
+          <>
+            <div className="mb-4 max-w-md">
+              <label className="text-sm text-muted-foreground">
+                Default refund reason
+                <input
+                  className="mt-1 flex h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                />
+              </label>
+            </div>
+            {refundError && <p className="mb-3 text-sm text-destructive">{refundError}</p>}
+            {refundsQuery.isLoading && (
+              <p className="text-sm text-muted-foreground">Loading refunds…</p>
+            )}
+            {refundsQuery.data?.length === 0 && (
+              <Card>
+                <CardContent className="py-10 text-center">
+                  <p className="text-sm text-muted-foreground">No refund requests yet.</p>
+                </CardContent>
+              </Card>
+            )}
+            <ul className="space-y-3">
+              {refundsQuery.data?.map((refund) => (
+                <li key={refund.id}>
+                  <Card>
+                    <CardContent className="flex flex-wrap items-start justify-between gap-3 py-4">
+                      <div>
+                        <p className="font-medium">
+                          {formatPrice(refund.amountCents, refund.currency)}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">{refund.reason}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {new Date(refund.requestedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{refund.status}</Badge>
+                        {refund.status === "REQUESTED" && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              cancelRefund(accessToken, refund.id).then(() =>
+                                queryClient.invalidateQueries({ queryKey: ["my-refunds"] }),
+                              )
+                            }
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </li>
               ))}
             </ul>
