@@ -367,3 +367,51 @@ export interface CreateApprovalRequest {
   resourceId: string;
   reason: string;
 }
+
+export type DisclosureDocumentStatus = "PROCESSING" | "READY" | "FAILED" | "REVOKED";
+
+export type DisclosureRequestStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "REVOKED"
+  | "EXPIRED";
+
+export interface DisclosureDocument {
+  id: string;
+  organisationId: string;
+  title: string;
+  description: string | null;
+  originalFileName: string;
+  sha256Checksum: string | null;
+  documentVersion: number;
+  status: DisclosureDocumentStatus;
+  fileSizeBytes: number | null;
+  createdAt: string;
+}
+
+export interface DisclosureRequestRecord {
+  id: string;
+  organisationId: string;
+  documentId: string;
+  documentTitle: string | null;
+  documentSha256: string | null;
+  documentVersion: number | null;
+  createdByUserId: string;
+  recipientUserId: string;
+  recipientEmail: string;
+  confidentialityTerms: string;
+  status: DisclosureRequestStatus;
+  expiresAt: string | null;
+  acceptedAt: string | null;
+  rejectedAt: string | null;
+  revokedAt: string | null;
+  disclosedAt: string;
+  createdAt: string;
+}
+
+export interface CreateDisclosureRequest {
+  recipientEmail: string;
+  confidentialityTerms: string;
+  expiresAt?: string | null;
+}
