@@ -295,7 +295,11 @@ export interface CreateAccessGrantRequest {
 
 export type SecurityEventSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type SecurityEventStatus = "OPEN" | "ACKNOWLEDGED" | "CLOSED";
-export type ApprovalActionType = "PRODUCT_SUSPEND" | "ENTITLEMENT_REVOKE" | "LICENCE_REVOKE";
+export type ApprovalActionType =
+  | "PRODUCT_SUSPEND"
+  | "ENTITLEMENT_REVOKE"
+  | "LICENCE_REVOKE"
+  | "REFUND_APPROVE";
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export interface SecurityEvent {
@@ -366,6 +370,7 @@ export interface CreateApprovalRequest {
   actionType: ApprovalActionType;
   resourceId: string;
   reason: string;
+  payload?: Record<string, unknown> | null;
 }
 
 export type DisclosureDocumentStatus = "PROCESSING" | "READY" | "FAILED" | "REVOKED";
@@ -414,4 +419,34 @@ export interface CreateDisclosureRequest {
   recipientEmail: string;
   confidentialityTerms: string;
   expiresAt?: string | null;
+}
+
+export type RefundRequestStatus =
+  | "REQUESTED"
+  | "UNDER_REVIEW"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED"
+  | "COMPLETED";
+
+export interface RefundRequestRecord {
+  id: string;
+  orderId: string;
+  paymentId: string;
+  buyerUserId: string;
+  organisationId: string | null;
+  amountCents: number;
+  currency: string;
+  reason: string;
+  status: RefundRequestStatus;
+  rejectionReason: string | null;
+  approvalRequestId: string | null;
+  providerRefundRef: string | null;
+  requestedAt: string;
+  decidedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface CreateRefundRequest {
+  reason: string;
 }
