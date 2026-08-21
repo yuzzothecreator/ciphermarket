@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record CatalogueProductResponse(
         UUID id,
+        UUID organisationId,
         UUID categoryId,
         String name,
         String slug,
@@ -21,6 +22,7 @@ public record CatalogueProductResponse(
     public static CatalogueProductResponse from(Product product) {
         return new CatalogueProductResponse(
                 product.getId(),
+                product.getOrganisationId(),
                 product.getCategoryId(),
                 product.getName(),
                 product.getSlug(),

@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public record CatalogueProductDetailResponse(
         UUID id,
+        UUID organisationId,
+        String organisationSlug,
         UUID categoryId,
         String name,
         String slug,
@@ -20,9 +22,11 @@ public record CatalogueProductDetailResponse(
         String refundPolicy,
         String coverImageUrl
 ) {
-    public static CatalogueProductDetailResponse from(Product product) {
+    public static CatalogueProductDetailResponse from(Product product, String organisationSlug) {
         return new CatalogueProductDetailResponse(
                 product.getId(),
+                product.getOrganisationId(),
+                organisationSlug,
                 product.getCategoryId(),
                 product.getName(),
                 product.getSlug(),
