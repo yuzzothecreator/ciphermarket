@@ -56,6 +56,7 @@ flowchart TB
 | `encryption` | Envelope encryption via `EncryptionProvider` |
 | `commerce` | Catalogue, cart, checkout, signed payment webhooks |
 | `delivery` | Licences, access grants, decrypt-and-transform downloads |
+| `disclosure` | Confidential documents, acceptance-gated access, hash evidence |
 | `audit` | Append-only tamper-evident audit trail |
 | `securityops` | Security events, sealed batches, maker-checker |
 | `security` | JWT conversion, headers, rate limiting |

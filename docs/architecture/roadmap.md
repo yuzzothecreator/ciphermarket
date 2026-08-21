@@ -44,10 +44,18 @@
 - Maker-checker approvals
 - Admin investigation UI
 
-## Phase 6 — Production readiness ✅ (current)
+## Phase 6 — Production readiness ✅
 
 - Playwright smoke tests for public pages
 - Grafana/Prometheus dashboard provisioning and ECS JSON logs in `prod`
 - k6 catalogue load script
 - Non-root web image, prod Compose overlay, security headers, in-process rate limit, secret guard
 - `@ciphermarket/sdk-node` typed client
+
+## Phase 7 — Confidential disclosure ✅ (current)
+
+- Encrypted disclosure documents with SHA-256 evidence hashes
+- Disclosure requests with confidentiality terms and expiration
+- Recipient acceptance / rejection inbox
+- Revocable access and append-only disclosure access events
+- Creator Studio + buyer portal UI

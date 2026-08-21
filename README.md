@@ -92,6 +92,7 @@ Phases 1–6 are implemented in this repository:
 - Ed25519 licences, access grants, watermarked/signed delivery
 - Security events, sealed audit batches, maker-checker admin console
 - Playwright smoke tests, Grafana dashboards, k6, prod Docker overlay, `@ciphermarket/sdk-node`
+- Confidential disclosures with hashed evidence trails and acceptance-gated downloads
 
 See [docs/architecture/roadmap.md](docs/architecture/roadmap.md) and [docs/operations/production-readiness.md](docs/operations/production-readiness.md).
 
@@ -113,6 +114,7 @@ When the API is running:
 ## Documentation
 
 - [Architecture](docs/architecture/system-architecture.md)
+- [Confidential disclosure](docs/architecture/confidential-disclosure.md)
 - [Threat model](docs/security/threat-model.md)
 - [Local setup](docs/operations/local-setup.md)
 - [Production readiness](docs/operations/production-readiness.md)

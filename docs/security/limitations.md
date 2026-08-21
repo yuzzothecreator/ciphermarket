@@ -11,14 +11,19 @@ CipherMarket documents security capabilities and limitations honestly.
 
 ## Cryptography
 
-- Envelope encryption uses established libraries (Google Tink planned for streaming AEAD in Phase 2).
+- Envelope encryption uses established libraries (Google Tink Streaming AEAD via Vault Transit wrapping).
 - Local development uses Vault in dev mode — **unsuitable for production**.
 - Encryption keys never reach the browser.
+
+## Confidential disclosure
+
+- Document hashing and disclosure records provide evidence of existence and history; they do not automatically create copyright, patent protection, or legally binding NDAs.
+- Confidential disclosure terms require explicit acceptance; legal review is the creator's responsibility.
+- Recipients cannot download until terms are accepted, and creators may revoke future access.
 
 ## Legal
 
 - Document hashing and disclosure records provide evidence of existence and history; they do not automatically create copyright, patent protection, or legally binding NDAs.
-- Confidential disclosure terms require explicit acceptance; legal review is the creator's responsibility.
 
 ## Identity
 
