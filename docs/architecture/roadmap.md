@@ -60,10 +60,17 @@
 - Revocable access and append-only disclosure access events
 - Creator Studio + buyer portal UI
 
-## Phase 8 — Refunds ✅ (current)
+## Phase 8 — Refunds ✅
 
 - Buyer refund requests on paid orders
 - Admin review queue with reject or maker-checker submit
 - `REFUND_APPROVE` dual-control execution
 - Entitlement and licence revocation on completed refunds
 - Buyer and admin UI + notification emails
+
+## Phase 9 — Discovery & creator insights ✅ (current)
+
+- Catalogue search, type/price filters, and sort
+- Public creator storefronts by organisation slug
+- Organisation sales analytics (paid orders only)
+- Buyer suspicious-activity reports into security ops

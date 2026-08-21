@@ -20,7 +20,7 @@ High-risk product flows emit operational events:
 - `ENTITLEMENT_GRANTED`
 - `DOWNLOAD_SUCCESS`
 - `APPROVAL_REQUESTED` / `APPROVAL_DECIDED`
-- `AUDIT_BATCH_SEALED`
+- `BUYER_SUSPICIOUS_REPORT`
 
 Events start `OPEN` and can be acknowledged by an administrator.
 
