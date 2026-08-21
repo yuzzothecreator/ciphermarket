@@ -4,14 +4,17 @@ import type {
   Cart,
   CatalogueProduct,
   CatalogueProductDetail,
+  CatalogueSearchParams,
   Category,
   CheckoutResponse,
   CreateAccessGrantRequest,
+  CreatorStorefront,
   Entitlement,
   HealthStatus,
   Licence,
   Order,
   ProblemDetail,
+  SalesAnalytics,
 } from "@ciphermarket/contracts";
 
 export interface CipherMarketClientOptions {
@@ -59,13 +62,37 @@ export class CipherMarketClient {
     return this.request<Category[]>("/api/v1/categories");
   }
 
-  listCatalogue(categoryId?: string) {
-    const query = categoryId ? `?categoryId=${encodeURIComponent(categoryId)}` : "";
+  listCatalogue(params?: CatalogueSearchParams | string) {
+    const search = new URLSearchParams();
+    if (typeof params === "string") {
+      if (params) search.set("categoryId", params);
+    } else if (params) {
+      if (params.q) search.set("q", params.q);
+      if (params.categoryId) search.set("categoryId", params.categoryId);
+      if (params.organisationId) search.set("organisationId", params.organisationId);
+      if (params.productType) search.set("productType", params.productType);
+      if (params.minPriceCents != null) search.set("minPriceCents", String(params.minPriceCents));
+      if (params.maxPriceCents != null) search.set("maxPriceCents", String(params.maxPriceCents));
+      if (params.sort) search.set("sort", params.sort);
+    }
+    const query = search.toString() ? `?${search}` : "";
     return this.request<CatalogueProduct[]>(`/api/v1/catalogue/products${query}`);
   }
 
   getCatalogueProduct(productId: string) {
     return this.request<CatalogueProductDetail>(`/api/v1/catalogue/products/${productId}`);
+  }
+
+  getCreatorStorefront(slug: string) {
+    return this.request<CreatorStorefront>(
+      `/api/v1/catalogue/creators/${encodeURIComponent(slug)}`,
+    );
+  }
+
+  getSalesAnalytics(organisationId: string) {
+    return this.request<SalesAnalytics>(
+      `/api/v1/organisations/${organisationId}/analytics/sales`,
+    );
   }
 
   getCart() {

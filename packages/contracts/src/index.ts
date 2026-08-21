@@ -173,6 +173,7 @@ export type EntitlementStatus = "ACTIVE" | "REVOKED" | "EXPIRED";
 
 export interface CatalogueProduct {
   id: string;
+  organisationId: string;
   categoryId: string | null;
   name: string;
   slug: string;
@@ -185,10 +186,65 @@ export interface CatalogueProduct {
 }
 
 export interface CatalogueProductDetail extends CatalogueProduct {
+  organisationSlug: string | null;
   fullDescription: string | null;
   usageTerms: string | null;
   refundPolicy: string | null;
   coverImageUrl: string | null;
+}
+
+export type CatalogueSort = "NEWEST" | "PRICE_ASC" | "PRICE_DESC" | "NAME_ASC";
+
+export interface CatalogueSearchParams {
+  q?: string;
+  categoryId?: string;
+  organisationId?: string;
+  productType?: ProductType;
+  minPriceCents?: number;
+  maxPriceCents?: number;
+  sort?: CatalogueSort;
+}
+
+export interface CreatorStorefront {
+  organisation: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  };
+  products: CatalogueProduct[];
+}
+
+export interface SalesAnalytics {
+  paidOrderCount: number;
+  unitsSold: number;
+  revenueCents: number;
+  currency: string;
+  products: Array<{
+    productId: string;
+    productName: string;
+    unitsSold: number;
+    revenueCents: number;
+    currency: string;
+  }>;
+}
+
+export type SuspiciousReportCategory = "LEAK" | "FRAUD" | "ABUSE" | "MALWARE" | "OTHER";
+
+export interface CreateSuspiciousReportRequest {
+  category: SuspiciousReportCategory;
+  summary: string;
+  resourceType?: string;
+  resourceId?: string;
+  details?: string;
+}
+
+export interface SuspiciousReportResponse {
+  eventType: string;
+  category: string;
+  summary: string;
+  resourceId: string | null;
+  submittedAt: string;
 }
 
 export interface CartItem {
