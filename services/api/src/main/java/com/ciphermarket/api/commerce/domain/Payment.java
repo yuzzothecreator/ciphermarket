@@ -121,4 +121,9 @@ public class Payment {
         this.failureReason = reason;
         this.completedAt = Instant.now();
     }
+
+    public void markRefunded() {
+        this.status = PaymentStatus.REFUNDED;
+        this.completedAt = Instant.now();
+    }
 }

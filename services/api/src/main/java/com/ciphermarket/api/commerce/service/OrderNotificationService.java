@@ -2,10 +2,7 @@ package com.ciphermarket.api.commerce.service;
 
 import com.ciphermarket.api.commerce.domain.Order;
 import com.ciphermarket.api.commerce.domain.OrderItem;
-import com.ciphermarket.api.commerce.dto.MockPaymentWebhookPayload;
-import com.ciphermarket.api.commerce.payment.PaymentWebhookSigner;
-import com.ciphermarket.api.commerce.repository.PaymentRepository;
-import com.ciphermarket.api.config.PaymentProperties;
+import com.ciphermarket.api.commerce.domain.RefundRequest;
 import com.ciphermarket.api.identity.repository.UserProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +11,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class OrderNotificationService {
@@ -39,6 +35,45 @@ public class OrderNotificationService {
                 mailSender.send(message);
             } catch (Exception e) {
                 log.warn("Mail send failed for order {}: {}", order.getId(), e.getMessage());
+            }
+        });
+    }
+
+    public void sendRefundDecision(RefundRequest refund, boolean approved) {
+        userProfileRepository.findById(refund.getBuyerUserId()).ifPresent(profile -> {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(profile.getEmail());
+            message.setSubject(approved
+                    ? "CipherMarket refund completed"
+                    : "CipherMarket refund request update");
+            String body = approved
+                    ? """
+                    Your refund request has been approved and completed.
+
+                    Order ID: %s
+                    Amount: %s
+                    Reference: %s
+
+                    Related entitlements and licences have been revoked.
+                    """.formatted(
+                            refund.getOrderId(),
+                            formatMoney(refund.getAmountCents(), refund.getCurrency()),
+                            refund.getProviderRefundRef()
+                    )
+                    : """
+                    Your refund request was not approved.
+
+                    Order ID: %s
+                    Reason: %s
+                    """.formatted(
+                            refund.getOrderId(),
+                            refund.getRejectionReason() != null ? refund.getRejectionReason() : "Not specified"
+                    );
+            message.setText(body);
+            try {
+                mailSender.send(message);
+            } catch (Exception e) {
+                log.warn("Refund mail failed for {}: {}", refund.getId(), e.getMessage());
             }
         });
     }

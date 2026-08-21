@@ -112,4 +112,8 @@ public class Order {
         this.status = OrderStatus.CANCELLED;
         this.cancelledAt = Instant.now();
     }
+
+    public void markRefunded() {
+        this.status = OrderStatus.REFUNDED;
+    }
 }

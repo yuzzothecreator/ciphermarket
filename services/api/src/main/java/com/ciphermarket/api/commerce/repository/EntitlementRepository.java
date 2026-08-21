@@ -18,5 +18,7 @@ public interface EntitlementRepository extends JpaRepository<Entitlement, UUID> 
 
     Optional<Entitlement> findByIdAndBuyerUserId(UUID id, UUID buyerUserId);
 
+    List<Entitlement> findByOrderId(UUID orderId);
+
     boolean existsByBuyerUserIdAndProductIdAndStatus(UUID buyerUserId, UUID productId, EntitlementStatus status);
 }

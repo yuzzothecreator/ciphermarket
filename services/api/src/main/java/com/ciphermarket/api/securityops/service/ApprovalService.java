@@ -2,7 +2,10 @@ package com.ciphermarket.api.securityops.service;
 
 import com.ciphermarket.api.audit.service.AuditService;
 import com.ciphermarket.api.commerce.domain.Entitlement;
+import com.ciphermarket.api.commerce.service.RefundService;
 import com.ciphermarket.api.commerce.repository.EntitlementRepository;
+import com.ciphermarket.api.commerce.repository.RefundRequestRepository;
+import org.springframework.context.annotation.Lazy;
 import com.ciphermarket.api.common.enums.ApprovalActionType;
 import com.ciphermarket.api.common.enums.ApprovalStatus;
 import com.ciphermarket.api.common.enums.ProductStatus;
@@ -34,6 +37,8 @@ public class ApprovalService {
     private final ProductRepository productRepository;
     private final EntitlementRepository entitlementRepository;
     private final LicenceRepository licenceRepository;
+    private final RefundRequestRepository refundRequestRepository;
+    private final RefundService refundService;
     private final AuditService auditService;
     private final SecurityEventService securityEventService;
 
@@ -43,6 +48,8 @@ public class ApprovalService {
             ProductRepository productRepository,
             EntitlementRepository entitlementRepository,
             LicenceRepository licenceRepository,
+            RefundRequestRepository refundRequestRepository,
+            @Lazy RefundService refundService,
             AuditService auditService,
             SecurityEventService securityEventService
     ) {
@@ -51,6 +58,8 @@ public class ApprovalService {
         this.productRepository = productRepository;
         this.entitlementRepository = entitlementRepository;
         this.licenceRepository = licenceRepository;
+        this.refundRequestRepository = refundRequestRepository;
+        this.refundService = refundService;
         this.auditService = auditService;
         this.securityEventService = securityEventService;
     }
@@ -171,6 +180,7 @@ public class ApprovalService {
                 licence.revoke();
                 licenceRepository.save(licence);
             });
+            case REFUND_APPROVE -> refundService.executeApprovedRefund(approval.getResourceId());
         }
     }
 
@@ -179,6 +189,7 @@ public class ApprovalService {
             case PRODUCT_SUSPEND -> "Product";
             case ENTITLEMENT_REVOKE -> "Entitlement";
             case LICENCE_REVOKE -> "Licence";
+            case REFUND_APPROVE -> "RefundRequest";
         };
     }
 
@@ -189,6 +200,9 @@ public class ApprovalService {
             case LICENCE_REVOKE -> licenceRepository.findById(resourceId).map(l -> {
                 return productRepository.findById(l.getProductId()).map(Product::getOrganisationId).orElse(null);
             }).orElse(null);
+            case REFUND_APPROVE -> refundRequestRepository.findById(resourceId)
+                    .map(r -> r.getOrganisationId())
+                    .orElse(null);
         };
     }
 }
