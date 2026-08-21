@@ -1,8 +1,8 @@
 "use client";
 
-import type { Entitlement } from "@ciphermarket/contracts";
+import type { DisclosureRequestRecord, Entitlement } from "@ciphermarket/contracts";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@ciphermarket/ui";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,6 +14,13 @@ import {
   listEntitlements,
   listOrders,
 } from "@/lib/buyer-api";
+import {
+  acceptDisclosure,
+  getDisclosureDownloadUrl,
+  listDisclosureInbox,
+  rejectDisclosure,
+} from "@/lib/disclosure-api";
+import { getAccessToken } from "@/lib/auth";
 
 function formatPrice(cents: number, currency: string): string {
   return new Intl.NumberFormat("en-GB", {
@@ -84,9 +91,102 @@ function EntitlementCard({
   );
 }
 
+function DisclosureInboxCard({
+  request,
+  token,
+}: {
+  request: DisclosureRequestRecord;
+  token: string;
+}) {
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+
+  const acceptMutation = useMutation({
+    mutationFn: () => acceptDisclosure(token, request.id),
+    onSuccess: () => {
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ["disclosure-inbox"] });
+    },
+    onError: (err: unknown) => setError(err instanceof Error ? err.message : "Accept failed"),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: () => rejectDisclosure(token, request.id),
+    onSuccess: () => {
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ["disclosure-inbox"] });
+    },
+    onError: (err: unknown) => setError(err instanceof Error ? err.message : "Reject failed"),
+  });
+
+  const download = async () => {
+    try {
+      setError(null);
+      const accessToken = getAccessToken() ?? token;
+      const response = await fetch(getDisclosureDownloadUrl(request.id), {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!response.ok) {
+        throw new Error(`Download failed (${response.status})`);
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = request.documentTitle ?? "disclosure-document";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Download failed");
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 py-5">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="font-medium">{request.documentTitle ?? "Confidential document"}</p>
+            <p className="text-xs text-muted-foreground">From organisation member</p>
+          </div>
+          <Badge variant={request.status === "ACCEPTED" ? "accent" : "outline"}>{request.status}</Badge>
+        </div>
+        {request.documentSha256 && (
+          <p className="break-all font-mono text-[11px] text-muted-foreground">
+            SHA-256 {request.documentSha256}
+          </p>
+        )}
+        <p className="text-sm text-muted-foreground">{request.confidentialityTerms}</p>
+        {request.status === "PENDING" && (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" disabled={acceptMutation.isPending} onClick={() => acceptMutation.mutate()}>
+              Accept terms
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={rejectMutation.isPending}
+              onClick={() => rejectMutation.mutate()}
+            >
+              Reject
+            </Button>
+          </div>
+        )}
+        {request.status === "ACCEPTED" && (
+          <Button size="sm" onClick={() => void download()}>
+            <Download className="mr-2 size-4" />
+            Download document
+          </Button>
+        )}
+        {error && <p className="text-xs text-destructive">{error}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function BuyerPortal() {
   const { accessToken, isAuthenticated } = useAuth();
-  const [tab, setTab] = useState<"orders" | "entitlements">("orders");
+  const [tab, setTab] = useState<"orders" | "entitlements" | "disclosures">("orders");
 
   const ordersQuery = useQuery({
     queryKey: ["orders"],
@@ -97,6 +197,12 @@ export function BuyerPortal() {
   const entitlementsQuery = useQuery({
     queryKey: ["entitlements"],
     queryFn: () => listEntitlements(accessToken!),
+    enabled: Boolean(accessToken),
+  });
+
+  const inboxQuery = useQuery({
+    queryKey: ["disclosure-inbox"],
+    queryFn: () => listDisclosureInbox(accessToken!),
     enabled: Boolean(accessToken),
   });
 
@@ -114,16 +220,12 @@ export function BuyerPortal() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <Badge variant="outline" className="mb-4">
-        Phase 4
-      </Badge>
       <h1 className="text-3xl font-semibold tracking-tight">Buyer portal</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        View orders and download purchased products via short-lived access grants. PDFs are
-        watermarked; source archives include signed manifests.
+        View orders, download purchased products, and manage confidential disclosure invitations.
       </p>
 
-      <div className="mt-8 flex gap-2">
+      <div className="mt-8 flex flex-wrap gap-2">
         <Button variant={tab === "orders" ? "default" : "secondary"} onClick={() => setTab("orders")}>
           Orders
         </Button>
@@ -132,6 +234,12 @@ export function BuyerPortal() {
           onClick={() => setTab("entitlements")}
         >
           Downloads
+        </Button>
+        <Button
+          variant={tab === "disclosures" ? "default" : "secondary"}
+          onClick={() => setTab("disclosures")}
+        >
+          Disclosures
         </Button>
       </div>
 
@@ -192,6 +300,28 @@ export function BuyerPortal() {
               {entitlementsQuery.data?.map((entitlement) => (
                 <li key={entitlement.id}>
                   <EntitlementCard entitlement={entitlement} token={accessToken} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {tab === "disclosures" && (
+          <>
+            {inboxQuery.isLoading && (
+              <p className="text-sm text-muted-foreground">Loading disclosures…</p>
+            )}
+            {inboxQuery.data?.length === 0 && (
+              <Card>
+                <CardContent className="py-10 text-center">
+                  <p className="text-sm text-muted-foreground">No confidential disclosures yet.</p>
+                </CardContent>
+              </Card>
+            )}
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {inboxQuery.data?.map((request) => (
+                <li key={request.id}>
+                  <DisclosureInboxCard request={request} token={accessToken} />
                 </li>
               ))}
             </ul>

@@ -20,6 +20,7 @@ import {
   submitForReview,
   uploadSessionFile,
 } from "@/lib/creator-api";
+import { DisclosureStudioPanel } from "@/components/disclosure-studio-panel";
 
 const inputClass =
   "flex h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -246,6 +247,8 @@ export function CreatorStudio() {
           </ul>
         )}
       </div>
+
+      {activeOrgId && <DisclosureStudioPanel token={accessToken} organisationId={activeOrgId} />}
     </div>
   );
 }
@@ -254,11 +257,12 @@ function PageHeader() {
   return (
     <>
       <Badge variant="outline" className="mb-4">
-        Phase 2
+        Creator Studio
       </Badge>
       <h1 className="text-3xl font-semibold tracking-tight">Creator Studio</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        Create products, upload assets through the secure quarantine pipeline, and publish versions when ready.
+        Create products, upload assets through the secure quarantine pipeline, publish versions, and
+        run confidential disclosures with hashed evidence trails.
       </p>
     </>
   );
