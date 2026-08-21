@@ -52,10 +52,18 @@
 - Non-root web image, prod Compose overlay, security headers, in-process rate limit, secret guard
 - `@ciphermarket/sdk-node` typed client
 
-## Phase 7 — Confidential disclosure ✅ (current)
+## Phase 7 — Confidential disclosure ✅
 
 - Encrypted disclosure documents with SHA-256 evidence hashes
 - Disclosure requests with confidentiality terms and expiration
 - Recipient acceptance / rejection inbox
 - Revocable access and append-only disclosure access events
 - Creator Studio + buyer portal UI
+
+## Phase 8 — Refunds ✅ (current)
+
+- Buyer refund requests on paid orders
+- Admin review queue with reject or maker-checker submit
+- `REFUND_APPROVE` dual-control execution
+- Entitlement and licence revocation on completed refunds
+- Buyer and admin UI + notification emails

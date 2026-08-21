@@ -37,6 +37,7 @@ Each `audit_events` row is hash-chained (`previous_hash` → `event_hash`). Seal
 | `PRODUCT_SUSPEND` | Product status → `SUSPENDED` |
 | `ENTITLEMENT_REVOKE` | Entitlement revoked; linked licence revoked |
 | `LICENCE_REVOKE` | Licence revoked (downloads fail) |
+| `REFUND_APPROVE` | Order/payment refunded; entitlements and licences revoked |
 
 ## API
 

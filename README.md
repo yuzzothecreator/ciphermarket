@@ -93,6 +93,7 @@ Phases 1–6 are implemented in this repository:
 - Security events, sealed audit batches, maker-checker admin console
 - Playwright smoke tests, Grafana dashboards, k6, prod Docker overlay, `@ciphermarket/sdk-node`
 - Confidential disclosures with hashed evidence trails and acceptance-gated downloads
+- Buyer refunds with maker-checker approval and entitlement revocation
 
 See [docs/architecture/roadmap.md](docs/architecture/roadmap.md) and [docs/operations/production-readiness.md](docs/operations/production-readiness.md).
 
@@ -115,6 +116,7 @@ When the API is running:
 
 - [Architecture](docs/architecture/system-architecture.md)
 - [Confidential disclosure](docs/architecture/confidential-disclosure.md)
+- [Refunds](docs/architecture/refunds.md)
 - [Threat model](docs/security/threat-model.md)
 - [Local setup](docs/operations/local-setup.md)
 - [Production readiness](docs/operations/production-readiness.md)
